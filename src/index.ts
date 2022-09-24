@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import sqlite3 from 'sqlite3';
 import { DataSource } from 'typeorm';
-import { User } from './entities/user';
+import { Book } from './entities/book';
+import { Meal } from './entities/meal';
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',
@@ -30,14 +30,34 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 app.get('/', async (req: Request, res: Response) => {
-  const users = await AppDataSource.getRepository(User).find();
-  res.json(users);
+  const books = await AppDataSource.getRepository(Book).find();
+  const meals = await AppDataSource.getRepository(Meal).find();
+  res.json({
+    books,
+    meals,
+  });
 });
 
-app.post('/', async (req: Request, res: Response): Promise<Response> => {
-  const user = await AppDataSource.getRepository(User).create(req.body);
-  const results = await AppDataSource.getRepository(User).save(user);
-  return res.send(results);
+app.get('/books', async (req: Request, res: Response) => {
+  const books = await AppDataSource.getRepository(Book).find();
+  res.json(books);
+});
+
+app.get('/meals', async (req: Request, res: Response) => {
+  const meals = await AppDataSource.getRepository(Meal).find();
+  res.json(meals);
+});
+
+app.post('/new', async (req: Request, res: Response): Promise<Response> => {
+  if (req.body.type === 'book') {
+    const book = await AppDataSource.getRepository(Book).create(req.body);
+    const results = await AppDataSource.getRepository(Book).save(book);
+    return res.send(results);
+  } else {
+    const meal = await AppDataSource.getRepository(Meal).create(req.body);
+    const results = await AppDataSource.getRepository(Meal).save(meal);
+    return res.send(results);
+  }
 });
 
 const PORT = 3000;
