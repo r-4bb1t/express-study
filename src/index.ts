@@ -60,6 +60,20 @@ app.post('/new', async (req: Request, res: Response): Promise<Response> => {
   }
 });
 
+app.post('/find', async (req: Request, res: Response): Promise<Response> => {
+  const books = await AppDataSource.getRepository(Book)
+    .createQueryBuilder('book')
+    .where('book.name like :name', { name: `%${req.body.name}%` })
+    .getMany();
+
+  const meals = await AppDataSource.getRepository(Meal)
+    .createQueryBuilder('meal')
+    .where('meal.name like :name', { name: `%${req.body.name}%` })
+    .getMany();
+
+  return res.send({ books, meals });
+});
+
 const PORT = 3000;
 
 try {
